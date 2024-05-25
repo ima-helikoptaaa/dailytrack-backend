@@ -5,6 +5,7 @@ from pathlib import Path
 load_dotenv(dotenv_path=Path(".env"))
 
 class Settings(BaseSettings):
+    PROJECT_NAME: str = "dailytrack"
     API_V1_STR: str = "/api/v1"
 
     MONGO_DATABASE: str
