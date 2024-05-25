@@ -1,9 +1,10 @@
 from app.core.config import settings
+from app.__version__ import __version__
 from motor import motor_asyncio, core
 from odmantic import AIOEngine
 from pymongo.driver_info import DriverInfo
 
-DRIVER_INFO = DriverInfo(name="daily-track-mongodb", version="0.1.0")
+DRIVER_INFO = DriverInfo(name="daily-track-mongodb", version=__version__)
 
 
 class _MongoClientSingleton:
