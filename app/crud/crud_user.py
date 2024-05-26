@@ -1,6 +1,6 @@
 from motor.core import AgnosticDatabase
 
-from app.core.security import get_password_hash
+from app.core.security import get_password_hash, verify_password
 from app.crud.base import CRUDBase
 from app.models.user import User
 from app.schemas.user import UserCreate, UserUpdate
@@ -20,5 +20,18 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
         }
 
         return await self.engine.save(User(**user))
+
+    async def authenticate(self, db: AgnosticDatabase, *, email: str, password: str) -> User | None: # noqa
+        user = await self.get_by_email(db, email=email)
+        if not user:
+            return None
+        if not verify_password(plain_password=password, hashed_password=user.hashed_password): # noqa
+            return None
+        return user
+    
+    @staticmethod
+    def is_active(user: User) -> bool:
+        return user.is_active
+
 
 user = CRUDUser(User)
