@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from fastapi.security import OAuth2PasswordRequestForm
 from motor.core import AgnosticDatabase
 
-from app import crud, schemas
+from app import crud, schemas, models
 from app.api import deps
 from app.core import security
 
@@ -26,6 +26,22 @@ async def login_with_oauth2(
 
     return {
         "access_token": security.create_access_token(subject=user.id),
+        "refresh_token": refresh_token,
+        "token_type": "bearer",
+    }
+
+@router.post("/refresh", response_model=schemas.Token)
+async def refresh_token(
+    db: AgnosticDatabase = Depends(deps.get_db),
+    current_user: models.User = Depends(deps.get_refresh_user),
+) -> Any:
+    """
+    Refresh tokens for future requests
+    """
+    refresh_token = security.create_refresh_token(subject=current_user.id)
+    await crud.token.create(db=db, obj_in=refresh_token, user_obj=current_user)
+    return {
+        "access_token": security.create_access_token(subject=current_user.id),
         "refresh_token": refresh_token,
         "token_type": "bearer",
     }
